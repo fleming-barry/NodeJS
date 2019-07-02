@@ -21,3 +21,20 @@ u.save().then((u) => {
 }).catch((err) => { 
     console.log('Error', err)
 })
+
+const Task = mongoose.model('Task', {
+    description: {
+        type: String
+    },
+    completed: {
+        type: Boolean
+    }
+})
+
+const t = new Task({ description: 'Making a test model', completed: true })
+
+t.save().then((t) => { 
+    console.log(t)
+}).catch((err) => { 
+    console.log('Error', err)
+})
