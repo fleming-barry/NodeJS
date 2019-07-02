@@ -32,33 +32,51 @@ const User = mongoose.model('User', {
                 throw new Error('Email is invalid')
             }
         }
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 7,
+        trim: true,
+        validate(val) {
+            if (val.toLowerCase().includes('password')) {
+                throw new Error('Can not contain the word password')
+            }
+        }
+
     }
 })
 
-const u = new User({ 
-    name: '     Max       ',
-    email: 'MAX@EMAIL.COM'
+const u = new User({
+    name: '     Donut       ',
+    email: 'DONUT@EMAIL.COM',
+    age: 21,
+    password: '   theMOSTUNSECUREPASSWORDEVER   '
+
 })
 
-u.save().then((u) => { 
-    console.log(u)
+// u.save().then((u) => {
+//     console.log(u)
+// }).catch((err) => {
+//     console.log('Error', err)
+// })
+
+const Task = mongoose.model('Task', {
+    description: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    completed: {
+        type: Boolean,
+        default: false
+    }
+})
+
+const t = new Task({ description: '     Azure POC    '})
+
+t.save().then((t) => { 
+    console.log(t)
 }).catch((err) => { 
     console.log('Error', err)
 })
-
-// const Task = mongoose.model('Task', {
-//     description: {
-//         type: String
-//     },
-//     completed: {
-//         type: Boolean
-//     }
-// })
-
-// const t = new Task({ description: 'Making a test model', completed: true })
-
-// t.save().then((t) => { 
-//     console.log(t)
-// }).catch((err) => { 
-//     console.log('Error', err)
-// })
