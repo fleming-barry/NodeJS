@@ -10,8 +10,17 @@ app.use(express.json())
 app.use(userRouter)
 app.use(taskRouter)
 
+const jwt = require('jsonwebtoken')
 
+const myFunction = async () => {
+    const token = jwt.sign({ _id: 'abdbdbad' }, 'thisismetestingitout', {expiresIn: '3 seconds'})
+    console.log(token)
 
+    const data = jwt.verify(token, 'thisismetestingitout')
+    console.log(data)
+}
+
+myFunction()
 app.listen(port, () => {
     console.log('Server is listening on port ' + port)
 })
