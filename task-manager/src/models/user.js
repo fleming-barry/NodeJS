@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Task = require('../models/task')
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -50,6 +51,12 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'userId'
+})
+
 userSchema.methods.generateAuthToken = async function () {
     const user = this
     const token = jwt.sign({
@@ -81,11 +88,11 @@ userSchema.statics.findByCredentials = async (email, password) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
-    console.log(isMatch)
+
     if (!isMatch) {
         throw new Error('Unable to login!')
     }
-    console.log(user)
+
     return user
 }
 
@@ -94,11 +101,16 @@ userSchema.pre('save', async function (next) {
     const user = this
     if (user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8)
-        console.log('Hashing', user.password)
     }
-
+    next()
 })
 
+//Delete user tasks
+userSchema.pre('remove', async function (next) {
+    const user = this
+    await Task.deleteMany({ userId: user._id})
+    next()
+})
 const User = mongoose.model('User', userSchema)
 
 module.exports = User
