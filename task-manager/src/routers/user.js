@@ -23,21 +23,39 @@ router.post('/users', async (req, res) => {
         const token = await user.generateAuthToken()
         await user.save()
         res.status(201).send({
-            user,
-            token
+            user: user,
+            token: token
         })
     } catch (e) {
         res.status(400).send(e)
     }
 })
 
-router.get('/users', auth, async (req, res) => {
+router.post('/users/logout', auth.auth, async (req, res) => {
     try {
-        const users = await User.find({})
-        res.status(200).send(users)
+        req.user.tokens = req.user.tokens.filter((tokens) => {
+            return tokens.token !== req.token
+        })
+        await req.user.save()
+        res.send()
     } catch (e) {
-        res.status(500).send(e)
+        console.log(e)
+        res.status(500).send()
     }
+})
+
+router.post('/users/logoutAll', auth.auth, async (req, res) => {
+    try {
+        req.user.tokens = []
+        await req.user.save()
+        res.send()
+    } catch (e) {
+        res.status(500).send()
+    }
+})
+
+router.get('/users/profile', auth.auth, async (req, res) => {
+    res.send(req.user)
 })
 
 router.get('/users/:id', async (req, res) => {
@@ -66,10 +84,6 @@ router.put('/users/:id', async (req, res) => {
         const user = await User.findById(req.params.id, req.body)
         updates.forEach((update) => user[update] = req.body[update])
         await user.save()
-        // const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-        //     new: true,
-        //     runValidators: true
-        // })
         if (!user) {
             return res.status(404).send()
         }
@@ -91,6 +105,5 @@ router.delete('/users/:id', async (req, res) => {
         return res.status(500).send(e)
     }
 })
-
 
 module.exports = router
