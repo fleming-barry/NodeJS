@@ -17,18 +17,40 @@ router.post('/tasks', Auth.auth, async (req, res) => {
         res.status(400).send(e)
     }
 })
-
+// GET /tasks?completed=true/false&skip=2&limit=2
+// GET /tasks?sortBy=createdAt:asc
 router.get('/tasks', Auth.auth, async (req, res) => {
+    const match = {}
+    const sort = {}
+
+    if (req.query.completed) {
+        match.completed = req.query.completed === 'true'
+    }
+
+    if (req.query.sortBy) {
+        const parts = req.query.sortBy.split(':')
+        sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
+    }
+
     try {
         //  populating virtual properties on mongoose model
-        //  await req.user.populate('tasks').execPopulate()
-        //  res.send(req.user.tasks)
+        await req.user.populate({
+            path: 'tasks',
+            match,
+            options: {
+                limit: parseInt(req.query.limit),
+                skip: parseInt(req.query.skip),
+                sort
+            }
+        }).execPopulate()
+         res.send(req.user.tasks)
 
-        const tasks = await Task.find({
-            userId: req.user._id
-        })
-        res.send(tasks)
+        // const tasks = await Task.find({
+        //     userId: req.user._id
+        // })
+        // res.send(tasks)
     } catch (e) {
+        console.log(e)
         res.status(500).send()
     }
 })
