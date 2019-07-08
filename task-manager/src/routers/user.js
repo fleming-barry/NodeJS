@@ -73,15 +73,6 @@ const upload = multer({
     }
 })
 
-router.post('/users/profile/avatar', auth.auth, upload.single('avatar'), async (req, res) => {
-
-    res.send(req.user)
-}, (err, req, res, next) => {
-    res.status(400).send({
-        errors: [err.message]
-    })
-})
-
 router.put('/users/profile', auth.auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'email', 'password', 'age']
@@ -106,6 +97,41 @@ router.delete('/users/profile', auth.auth, async (req, res) => {
         return res.send(req.user)
     } catch (e) {
         return res.status(500).send(e)
+    }
+})
+
+router.post('/users/profile/avatar', auth.auth, upload.single('avatar'), async (req, res) => {
+    req.user.avatar = req.file.buffer
+    await req.user.save()
+    res.send()
+}, (err, req, res, next) => {
+    res.status(400).send({
+        errors: [err.message]
+    })
+})
+
+router.delete('/users/profile/avatar', auth.auth,  async (req, res) => {
+    req.user.avatar = undefined
+    await req.user.save()
+    res.send()
+}, (err, req, res, next) => {
+    res.status(400).send({
+        errors: [err.message]
+    })
+})
+
+router.get('/users/:id/avatar', async (req, res) => { 
+    try {
+        const user = await User.findById(req.params.id)
+        
+        if (!user || !user.avatar) {
+            throw new Error()
+        }
+
+        res.set('Content-Type', 'image/png')
+        res.send(user.avatar)
+    } catch (e) {
+        res.status(400).send()
     }
 })
 
