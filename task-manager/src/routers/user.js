@@ -61,19 +61,6 @@ router.get('/users/profile', auth.auth, async (req, res) => {
     res.send(req.user)
 })
 
-const upload = multer({
-    limits: {
-        fileSize: 1000000
-    },
-    fileFilter(req, file, cb) {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|tiff)$/)) {
-            return cb(new Error('File must be a of type jpeg or jpg'))
-        }
-
-        cb(undefined, true)
-    }
-})
-
 router.put('/users/profile', auth.auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'email', 'password', 'age']
@@ -98,6 +85,19 @@ router.delete('/users/profile', auth.auth, async (req, res) => {
         return res.send(req.user)
     } catch (e) {
         return res.status(500).send(e)
+    }
+})
+
+const upload = multer({
+    limits: {
+        fileSize: 1000000
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|tiff)$/)) {
+            return cb(new Error('File must be a of type jpeg or jpg'))
+        }
+
+        cb(undefined, true)
     }
 })
 
